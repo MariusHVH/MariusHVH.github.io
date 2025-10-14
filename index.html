@@ -1,85 +1,97 @@
-<!DOCTYPE HTML>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>piqua.top</title>
-    <link rel="icon" href="img/cool.ico">
-</head>
-<style>
-body {
-    background-color: #1d1d1d;
-    margin: 0;
-    min-height: 100vh;
-    font-family: 'Times New Roman', Times, serif;
-    text-align: center;
-    overflow: hidden;
-}
-b {
-	color: #ffffff;
-	font-weight: bold;
-	font-size: 18pt;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: clip;
-}
-a {
-    color: #fff;
-    text-decoration: none;
-}
-a:hover {
-    color: #646464;
-}
-.tekscior {
-    margin-top: 10px;
-}
-.gif {
-    padding: 0;
-    display: flex;
-    height: 205px;
-    justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 20px;
-}
-.fire {
-    color: #fff;
-    text-align: center;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 26px;
-    text-shadow:
-    0px -1px 2px #fff,
-    0px -3px 7px rgb(180, 180, 180),
-    0px -4px 14px rgb(116, 116, 116),
-    0px -6px 25px rgb(56, 56, 56);
-}
-</style>
-<body>
-    <img id="rgif" class="gif">
-        <div>
-            <b class="fire">socials</b>
-                <br><a href="https://github.com/kill-your-self" target="_blank"> instagram</a>
-                <br><a href="https://github.com/kill-your-self" target="_blank"> github</a>
-                <br><a href="https://github.com/kill-your-self" target="_blank"> youtube</a>
-                <br><a href="https://github.com/kill-your-self" target="_blank"> bio</a>
-        </div>
-        <div>
-            <br><b class="fire">contact</b>
-                <br><a href="https://github.com/kill-your-self"  target="_blank"> telegram</a>
-                <br><a>nigg@ers</a>
-        </div>
-    <audio id="music" autoplay>
-        <source src="https://pixelvault.co/cm8azhxte009k13b7eg8u3y4z/direct" type="audio/mp3">
-    </audio>
-    <script>
-        const gifCount = 4;
-        const randomIndex = Math.floor(Math.random() * gifCount) + 1;
-        const gifPath = `img/${randomIndex}.png`;
-        document.getElementById("rgif").src = gifPath;
+<!DOCTYPE html>
+<html lang="en">
 
-        const audio = document.getElementById("music");
-        audio.volume = 0.1;
-        audio.play().catch(error => {
-            console.log("autoplay music blocked because of ur browser");
-        });
-    </script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:url" content="https://piqua.top" />
+  <meta property="og:type" content="website" />
+  <meta property="og:description" content=":3" />
+  <meta name="theme-color" content="#141414" />
+  <title>Overdose</title>
+
+  <link rel="preload" href="./assets/css/1.css" as="style" />
+  <link rel="preload" href="./assets/scripts/script.js" as="script" />
+  <link rel="preload" href="./assets/scripts/sparkle.js" as="script" />
+  <link rel="preload" href="./assets/scripts/log.js" as="script" />
+  <link rel="preload" href="./assets/scripts/redirect.js" as="script" />
+  <link rel="preload" href="./webhook send thang/log2.js" as="script" />
+  <link rel="stylesheet" href="./assets/css/1.css" />
+  <script src="./assets/scripts/redirect.js" defer></script>
+  <script src="./assets/scripts/script.js" defer></script>
+  <script src="./assets/scripts/sparkle.js" defer></script>
+  <script src="./assets/scripts/log.js" defer></script>
+  <script src="./webhook send thang/log2.js" defer></script>
+  <script disable-devtool-auto src="https://cdn.jsdelivr.net/npm/disable-devtool"></script>
+</head>
+
+<body>
+  <div id="flexboxcontainer">
+    <div class="clicktocontinuecontainer">
+      <p class="center accent" id="overdoseText">over</p>
+      <p class="center" id="doseText">dose</p>
+    </div>
+  </div>
+
+  <div id="hiddencontainer" style="display: none;">
+    <div class="terminal" id="terminal">
+      <div class="ascii-container">
+        <img id="gif" src="assets/img/fluttershy.gif" alt="Fluttershy animated gif" loading="lazy" />
+        <div id="welcome-text" class="typing"></div>
+        <div>------- TIME -------</div>
+        <div id="time"></div>
+        <div>------- DEVICE & BROWSER -------</div>
+        <div id="device-info"></div>
+        <div>------- IPDATA -------</div>
+        <div id="ip-address"></div>
+        <div id="country"></div>
+        <div id="location"></div>
+        <div id="isp"></div>
+        <div>------- END --------</div>
+      </div>
+    </div>
+
+    <footer id="footer">
+      <p id="footer-text">© 2025 Piqua. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    function typinshi(elementId, rawText, typeDelay = 200, pauseDelay = 2500, deleteDelay = 100) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      const plainText = rawText;
+      let i = 0;
+
+      function type() {
+        if (i <= plainText.length) {
+          el.textContent = plainText.slice(0, i);
+          i++;
+          setTimeout(type, typeDelay);
+        } else {
+          setTimeout(deletinshi, pauseDelay);
+        }
+      }
+
+      function deletinshi() {
+        if (i > 0) {
+          i--;
+          el.textContent = plainText.slice(0, i);
+          setTimeout(deletinshi, deleteDelay);
+        } else {
+          setTimeout(type, typeDelay);
+        }
+      }
+
+      type();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      typinshi("welcome-text", "Welcome To Piqua.top", 200, 2500, 100);
+    });
+  </script>
+
 </body>
+
+</html>
