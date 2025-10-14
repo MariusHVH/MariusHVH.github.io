@@ -1,1 +1,85 @@
-sigma placeholder
+<!DOCTYPE HTML>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cool</title>
+    <link rel="icon" href="img/cool.ico">
+</head>
+<style>
+body {
+    background-color: #1d1d1d;
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Times New Roman', Times, serif;
+    text-align: center;
+    overflow: hidden;
+}
+b {
+	color: #ffffff;
+	font-weight: bold;
+	font-size: 18pt;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: clip;
+}
+a {
+    color: #fff;
+    text-decoration: none;
+}
+a:hover {
+    color: #646464;
+}
+.tekscior {
+    margin-top: 10px;
+}
+.gif {
+    padding: 0;
+    display: flex;
+    height: 205px;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+}
+.fire {
+    color: #fff;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 26px;
+    text-shadow:
+    0px -1px 2px #fff,
+    0px -3px 7px rgb(180, 180, 180),
+    0px -4px 14px rgb(116, 116, 116),
+    0px -6px 25px rgb(56, 56, 56);
+}
+</style>
+<body>
+    <img id="rgif" class="gif">
+        <div>
+            <b class="fire">socials</b>
+                <br><a href="https://github.com/kill-your-self" target="_blank"> instagram</a>
+                <br><a href="https://github.com/kill-your-self" target="_blank"> github</a>
+                <br><a href="https://github.com/kill-your-self" target="_blank"> youtube</a>
+                <br><a href="https://github.com/kill-your-self" target="_blank"> bio</a>
+        </div>
+        <div>
+            <br><b class="fire">contact</b>
+                <br><a href="https://github.com/kill-your-self"  target="_blank"> telegram</a>
+                <br><a>nigg@ers</a>
+        </div>
+    <audio id="music" autoplay>
+        <source src="https://pixelvault.co/cm8azhxte009k13b7eg8u3y4z/direct" type="audio/mp3">
+    </audio>
+    <script>
+        const gifCount = 4;
+        const randomIndex = Math.floor(Math.random() * gifCount) + 1;
+        const gifPath = `img/${randomIndex}.png`;
+        document.getElementById("rgif").src = gifPath;
+
+        const audio = document.getElementById("music");
+        audio.volume = 0.1;
+        audio.play().catch(error => {
+            console.log("autoplay music blocked because of ur browser");
+        });
+    </script>
+</body>
