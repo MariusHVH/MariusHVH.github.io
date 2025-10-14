@@ -22,12 +22,13 @@
     .spotify-card {
       display: flex;
       align-items: center;
-      gap: 15px;
-      background: rgba(25, 25, 30, 0.75);
+      gap: 12px;
+      background: rgba(25, 25, 30, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 15px 20px;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 12px 15px;
+      width: 260px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
       transition: transform 0.3s ease;
     }
 
@@ -36,12 +37,10 @@
     }
 
     .spotify-cover {
-      width: 90px;
-      height: 90px;
-      border-radius: 10px;
+      width: 65px;
+      height: 65px;
+      border-radius: 8px;
       object-fit: cover;
-      flex-shrink: 0;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
       display: none;
     }
 
@@ -49,12 +48,12 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      text-align: left;
+      flex: 1;
       overflow: hidden;
     }
 
     .spotify-title {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: #1DB954;
       white-space: nowrap;
@@ -63,17 +62,17 @@
     }
 
     .spotify-artist {
-      font-size: 0.9rem;
-      color: #ccc;
+      font-size: 0.8rem;
+      color: #bbb;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .spotify-status {
-      font-size: 0.8rem;
-      color: #999;
-      margin-top: 5px;
+      font-size: 0.7rem;
+      color: #888;
+      margin-top: 4px;
     }
 
     @keyframes pulse {
@@ -84,17 +83,12 @@
 
     .listening-dot {
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background-color: #1DB954;
-      margin-right: 6px;
+      margin-right: 5px;
       animation: pulse 1.4s infinite;
-    }
-
-    .error {
-      color: #f55;
-      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -126,7 +120,6 @@
           artistEl.textContent = "";
           statusText.textContent = "Disconnected";
           coverImg.style.display = "none";
-          console.error(data.error);
           return;
         }
 
