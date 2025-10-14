@@ -7,13 +7,18 @@
   <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3b5.png" type="image/png" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --spotify-green: #1DB954;
+      --bg: radial-gradient(circle at center, #0f0f0f 0%, #000 100%);
+    }
+
     body {
       margin: 0;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: radial-gradient(circle at center, #0f0f0f 0%, #000 100%);
+      background: var(--bg);
       font-family: 'Poppins', sans-serif;
       color: #fff;
       overflow: hidden;
@@ -22,26 +27,29 @@
     .spotify-card {
       display: flex;
       align-items: center;
-      gap: 12px;
-      background: rgba(25, 25, 30, 0.8);
+      gap: 18px;
+      background: rgba(25, 25, 30, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      padding: 12px 15px;
-      width: 260px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
-      transition: transform 0.3s ease;
+      border-radius: 20px;
+      padding: 18px 25px;
+      width: 340px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.45);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .spotify-card:hover {
-      transform: scale(1.05);
+      transform: scale(1.03);
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.55);
     }
 
     .spotify-cover {
-      width: 65px;
-      height: 65px;
-      border-radius: 8px;
+      width: 85px;
+      height: 85px;
+      border-radius: 10px;
       object-fit: cover;
       display: none;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
 
     .spotify-info {
@@ -53,16 +61,16 @@
     }
 
     .spotify-title {
-      font-size: 0.9rem;
+      font-size: 1.05rem;
       font-weight: 600;
-      color: #1DB954;
+      color: var(--spotify-green);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .spotify-artist {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: #bbb;
       white-space: nowrap;
       overflow: hidden;
@@ -70,25 +78,46 @@
     }
 
     .spotify-status {
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       color: #888;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     @keyframes pulse {
       0% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 1; }
       100% { transform: scale(1); opacity: 0.8; }
     }
 
     .listening-dot {
       display: inline-block;
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background-color: #1DB954;
-      margin-right: 5px;
+      background-color: var(--spotify-green);
+      margin-right: 6px;
       animation: pulse 1.4s infinite;
+    }
+
+    /* smooth scaling for all screen sizes */
+    @media (max-width: 480px) {
+      .spotify-card {
+        width: 90%;
+        padding: 14px 18px;
+      }
+
+      .spotify-cover {
+        width: 70px;
+        height: 70px;
+      }
+
+      .spotify-title {
+        font-size: 0.9rem;
+      }
+
+      .spotify-artist {
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
