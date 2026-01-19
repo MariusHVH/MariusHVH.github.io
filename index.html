@@ -558,7 +558,7 @@
       <div class="left">
         <div id="profile-group" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
         <img id="profile-pic" src="https://cdn.discordapp.com/embed/avatars/0.png">
-        <span id="profile-name">@p1qua</span>
+        <span id="profile-name">@pf7k</span>
         </div>
       </div>
       <div class="tasks" id="tasks">
@@ -1004,7 +1004,7 @@
           e.preventDefault();
           const value = currentInput.trim();
           if (value) {
-            if (value.toLowerCase() === 'discord') appendLine('@p1qua on discord');
+            if (value.toLowerCase() === 'discord') appendLine('@pf7k on discord');
             else if (value.toLowerCase() === 'clear') {
               resetTerminal();
               return;
@@ -1035,6 +1035,7 @@
     hour12: true
   };
   const timeStr = new Intl.DateTimeFormat('en-US', optionsTime).format(now);
+
   document.querySelector('.clock').textContent = timeStr.toLowerCase()
     }
     setInterval(updateClock, 1000);
@@ -1093,7 +1094,7 @@
       pfp.src = "";
       name.textContent = "";
       status.innerHTML = "";
-      ctext.textContent = customText || "@p1qua";
+      ctext.textContent = customText || "@pf7k";
       if (!lanyardId) return;
       fetch(`https://api.lanyard.rest/v1/users/${lanyardId}`)
         .then(r => r.json())
@@ -1106,7 +1107,7 @@
             pfp.src = avatarUrl;
             panelPfp.src = avatarUrl;
             name.textContent = 'piqua';
-            panelName.textContent = 'p1qua';
+            panelName.textContent = 'pf7k';
             const st = d.discord_status;
             const dot = document.createElement('span');
             dot.className = "status-dot";
@@ -1132,7 +1133,7 @@
       const currentName = document.getElementById('profile-name').textContent || defaultProfileName;
       bioPfp.src = currentPfp;
       bioName.textContent = currentName;
-      const bioText = `@p1qua on discord \ | roblox @cutthecheese |\ |https://vacban.wtf/members/85898|`;
+      const bioText = `@pf7k on discord \ | roblox @cutthecheese |\ |https://vacban.wtf/members/85898|`;
       bioCustom.textContent = bioText;
     }
 
