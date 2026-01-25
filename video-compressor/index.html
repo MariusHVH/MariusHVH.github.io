@@ -1,200 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>8MB Video Compressor</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-body {
-  background:#0f0f0f;
-  color:white;
-  font-family:Arial;
-  text-align:center;
-  padding:20px;
-}
-
-.container {
-  max-width:420px;
-  margin:auto;
-  background:#1c1c1c;
-  padding:20px;
-  border-radius:14px;
-}
-
-.dropbox {
-  border:2px dashed #00bfff;
-  padding:20px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-.dropbox:hover {
-  background:#222;
-}
-
-button {
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#00bfff;
-  font-weight:bold;
-  cursor:pointer;
-  margin-top:10px;
-}
-
-.progress {
-  width:100%;
-  background:#333;
-  border-radius:6px;
-  margin-top:10px;
-  overflow:hidden;
-}
-
-.bar {
-  height:10px;
-  width:0%;
-  background:#00ff90;
-}
-
-#download {
-  display:none;
-  margin-top:15px;
-  color:#00ff90;
-}
+body { font-family: sans-serif; text-align: center; padding: 50px; }
+#drop { border: 2px dashed #666; padding: 50px; cursor: pointer; }
+#progress { width: 80%; height: 20px; border: 1px solid #666; margin: 20px auto; }
+#progress div { height: 100%; background: green; width: 0%; }
 </style>
 </head>
-
 <body>
 
-<div class="container">
-
-<h2>8MB Video Compressor</h2>
-
-<div class="dropbox" id="dropbox">
-  <p id="fileLabel">Click or Drop Video Here</p>
-</div>
-
-<input type="file" id="fileInput" accept="video/*" hidden>
-
+<h1>8MB Video Compressor</h1>
+<div id="drop">Click or Drop Video Here</div>
 <button id="compressBtn">Compress to 8MB</button>
+<div id="progress"><div></div></div>
+<a id="downloadLink" style="display:none;">Download Compressed Video</a>
 
-<div class="progress">
-  <div class="bar" id="progressBar"></div>
-</div>
-
-<p id="status"></p>
-
-<a id="download">Download Video</a>
-
-</div>
-
-<!-- Fixed CDN for GitHub Pages / piqua.top -->
-<script src="https://cdn.jsdelivr.net/gh/ffmpegwasm/ffmpeg.wasm@v0.12.6/dist/ffmpeg.min.js"></script>
-
+<script src="ffmpeg.min.js"></script>
 <script>
-window.addEventListener("load", () => {
+const ffmpeg = FFmpeg.createFFmpeg({ log: true });
+let videoFile;
 
-  if (!window.FFmpeg) {
-    document.getElementById("status").innerText =
-      "FFmpeg failed to load. Refresh page.";
-    return;
-  }
+document.getElementById('drop').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'video/*';
+  input.onchange = e => videoFile = e.target.files[0];
+  input.click();
+});
 
-  const { createFFmpeg, fetchFile } = FFmpeg;
-
-  const ffmpeg = createFFmpeg({
-    log: false,
-    progress: p => {
-      document.getElementById("progressBar").style.width =
-        Math.round(p.ratio * 100) + "%";
-    }
+document.getElementById('compressBtn').addEventListener('click', async () => {
+  if (!videoFile) return alert('Please select a video first!');
+  
+  const progressBar = document.querySelector('#progress div');
+  
+  if (!ffmpeg.isLoaded()) await ffmpeg.load({ 
+    coreURL: 'ffmpeg-core.js',
+    wasmURL: 'ffmpeg-core.wasm'
   });
 
-  const fileInput = document.getElementById("fileInput");
-  const dropbox = document.getElementById("dropbox");
-  const label = document.getElementById("fileLabel");
-  const status = document.getElementById("status");
-  const compressBtn = document.getElementById("compressBtn");
-  const downloadLink = document.getElementById("download");
-
-  dropbox.onclick = () => fileInput.click();
-
-  fileInput.onchange = () => {
-    label.innerText = fileInput.files[0].name;
-  };
-
-  dropbox.addEventListener("dragover", e => {
-    e.preventDefault();
+  ffmpeg.setProgress(({ ratio }) => {
+    progressBar.style.width = Math.round(ratio * 100) + '%';
   });
 
-  dropbox.addEventListener("drop", e => {
-    e.preventDefault();
-    fileInput.files = e.dataTransfer.files;
-    label.innerText = e.dataTransfer.files[0].name;
-  });
-
-  compressBtn.onclick = async () => {
-
-    if (!fileInput.files.length) {
-      alert("Select a video first");
-      return;
-    }
-
-    const file = fileInput.files[0];
-
-    if (file.size > 300 * 1024 * 1024) {
-      alert("Max 300MB input allowed");
-      return;
-    }
-
-    status.innerText = "Loading engine (first time slow)...";
-
-    await ffmpeg.load();
-
-    status.innerText = "Reading video...";
-
-    ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
-
-    // Get duration
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(file);
-    await video.play().catch(()=>{});
-    const duration = video.duration;
-    video.remove();
-
-    // Target 8MB bitrate calculation
-    const targetBits = 8 * 1024 * 1024 * 8;
-    const bitrate = Math.floor((targetBits / duration) * 0.92);
-
-    status.innerText = "Compressing to ~8MB...";
-
-    await ffmpeg.run(
-      "-i", "input.mp4",
-      "-vf", "scale=1280:-2",
-      "-b:v", bitrate.toString(),
-      "-preset", "veryfast",
-      "-movflags", "+faststart",
-      "-an",
-      "output.mp4"
-    );
-
-    const data = ffmpeg.FS("readFile", "output.mp4");
-
-    const blob = new Blob([data.buffer], { type: "video/mp4" });
-    const url = URL.createObjectURL(blob);
-
-    downloadLink.href = url;
-    downloadLink.download = "compressed-8mb.mp4";
-    downloadLink.style.display = "block";
-
-    status.innerText = "Done ✅";
-
-  };
-
+  const name = 'input.mp4';
+  ffmpeg.FS('writeFile', name, new Uint8Array(await videoFile.arrayBuffer()));
+  
+  // compress video to roughly 8MB
+  await ffmpeg.run('-i', name, '-b:v', '8000k', '-bufsize', '8000k', 'output.mp4');
+  
+  const data = ffmpeg.FS('readFile', 'output.mp4');
+  const blob = new Blob([data.buffer], { type: 'video/mp4' });
+  
+  const downloadLink = document.getElementById('downloadLink');
+  downloadLink.href = URL.createObjectURL(blob);
+  downloadLink.download = 'compressed.mp4';
+  downloadLink.style.display = 'block';
 });
 </script>
-
 </body>
 </html>
