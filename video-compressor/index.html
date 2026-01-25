@@ -1,50 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>8MB Video Compressor</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: #fff;
-  text-align: center;
-  padding: 30px;
+  background:#111;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+  padding:30px;
 }
 
 .box {
-  background: #1e1e1e;
-  padding: 20px;
-  border-radius: 12px;
-  max-width: 400px;
-  margin: auto;
+  background:#1e1e1e;
+  padding:20px;
+  border-radius:12px;
+  max-width:400px;
+  margin:auto;
 }
 
 input, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
 }
 
 button {
-  background: #00bfff;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:hover {
-  opacity: 0.9;
+  background:#00bfff;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 #download {
-  display: none;
-  margin-top: 15px;
-  color: #00ff90;
-  font-weight: bold;
+  display:none;
+  color:#00ff90;
+  margin-top:15px;
 }
 </style>
 </head>
@@ -52,35 +47,40 @@ button:hover {
 <body>
 
 <div class="box">
-  <h2>8MB Video Compressor</h2>
 
-  <input type="file" id="upload" accept="video/*">
+<h2>8MB Video Compressor</h2>
 
-  <button onclick="compress()">Compress Video</button>
+<input type="file" id="upload" accept="video/*">
 
-  <p id="status"></p>
+<button onclick="compressVideo()">Compress</button>
 
-  <a id="download">Download Compressed Video</a>
+<p id="status"></p>
+
+<a id="download">Download Video</a>
+
 </div>
 
-<script type="module">
-import { createFFmpeg, fetchFile } from "https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js";
+<!-- FFmpeg UMD build (NO CORS problems) -->
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
 
+<script>
+
+const { createFFmpeg, fetchFile } = FFmpeg;
 const ffmpeg = createFFmpeg({ log: false });
 
-async function compress() {
+async function compressVideo() {
 
-  const input = document.getElementById("upload");
+  const fileInput = document.getElementById("upload");
   const status = document.getElementById("status");
 
-  if (!input.files.length) {
-    alert("Select a video first");
+  if (!fileInput.files.length) {
+    alert("Please select a video");
     return;
   }
 
-  const file = input.files[0];
+  const file = fileInput.files[0];
 
-  status.innerText = "Loading compressor (first time takes 20s)...";
+  status.innerText = "Loading engine (first time slow)...";
 
   await ffmpeg.load();
 
@@ -107,10 +107,10 @@ async function compress() {
   link.download = "compressed.mp4";
   link.style.display = "block";
 
-  status.innerText = "Done ✅ Ready to download";
+  status.innerText = "Done ✅";
+
 }
 
-window.compress = compress;
 </script>
 
 </body>
