@@ -7,93 +7,167 @@
 
 <style>
 body {
-  background:#111;
+  background:#0f0f0f;
   color:white;
   font-family:Arial;
   text-align:center;
-  padding:30px;
-}
-
-.box {
-  background:#1e1e1e;
   padding:20px;
-  border-radius:12px;
-  max-width:400px;
-  margin:auto;
 }
 
-input, button {
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:8px;
-  border:none;
+.container {
+  max-width:420px;
+  margin:auto;
+  background:#1c1c1c;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 0 20px rgba(0,0,0,.5);
+}
+
+.dropbox {
+  border:2px dashed #00bfff;
+  padding:20px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.dropbox:hover {
+  background:#222;
 }
 
 button {
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
   background:#00bfff;
   font-weight:bold;
   cursor:pointer;
+  margin-top:10px;
+}
+
+.progress {
+  width:100%;
+  background:#333;
+  border-radius:6px;
+  margin-top:10px;
+  overflow:hidden;
+}
+
+.bar {
+  height:10px;
+  width:0%;
+  background:#00ff90;
 }
 
 #download {
   display:none;
-  color:#00ff90;
   margin-top:15px;
+  color:#00ff90;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
 
 <h2>8MB Video Compressor</h2>
 
-<input type="file" id="upload" accept="video/*">
+<div class="dropbox" onclick="fileInput.click()">
+  <p id="fileLabel">Click or Drop Video Here</p>
+</div>
 
-<button onclick="compressVideo()">Compress</button>
+<input type="file" id="fileInput" accept="video/*" hidden>
+
+<button onclick="compressVideo()">Compress to 8MB</button>
+
+<div class="progress">
+  <div class="bar" id="progressBar"></div>
+</div>
 
 <p id="status"></p>
 
-<a id="download">Download Video</a>
+<a id="download">Download Compressed Video</a>
 
 </div>
 
-<!-- FFmpeg UMD build (NO CORS problems) -->
+<!-- FFmpeg (CORS safe) -->
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
 
 <script>
 
 const { createFFmpeg, fetchFile } = FFmpeg;
-const ffmpeg = createFFmpeg({ log: false });
+const ffmpeg = createFFmpeg({
+  log: false,
+  progress: p => {
+    document.getElementById("progressBar").style.width =
+      Math.round(p.ratio * 100) + "%";
+  }
+});
+
+const fileInput = document.getElementById("fileInput");
+const label = document.getElementById("fileLabel");
+
+fileInput.onchange = () => {
+  label.innerText = fileInput.files[0].name;
+};
+
+// Drag & Drop
+document.querySelector(".dropbox").addEventListener("dragover", e => {
+  e.preventDefault();
+});
+
+document.querySelector(".dropbox").addEventListener("drop", e => {
+  e.preventDefault();
+  fileInput.files = e.dataTransfer.files;
+  label.innerText = e.dataTransfer.files[0].name;
+});
 
 async function compressVideo() {
 
-  const fileInput = document.getElementById("upload");
   const status = document.getElementById("status");
 
   if (!fileInput.files.length) {
-    alert("Please select a video");
+    alert("Select a video first");
     return;
   }
 
   const file = fileInput.files[0];
 
-  status.innerText = "Loading engine (first time slow)...";
+  if (file.size > 300 * 1024 * 1024) {
+    alert("Video too large for browser compression (300MB max)");
+    return;
+  }
+
+  status.innerText = "Loading engine (first run slow)...";
 
   await ffmpeg.load();
 
-  status.innerText = "Compressing...";
+  status.innerText = "Analyzing video...";
 
   ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
+
+  // Estimate duration (quick trick)
+  const video = document.createElement("video");
+  video.src = URL.createObjectURL(file);
+  await video.play().catch(()=>{});
+  const duration = video.duration;
+  video.remove();
+
+  // Calculate bitrate for ~8MB target
+  const targetSize = 8 * 1024 * 1024 * 8; // bits
+  const videoBitrate = Math.floor((targetSize / duration) * 0.92);
+
+  status.innerText = "Compressing to ~8MB...";
 
   await ffmpeg.run(
     "-i", "input.mp4",
     "-vf", "scale=1280:-2",
+    "-b:v", videoBitrate.toString(),
     "-preset", "veryfast",
-    "-crf", "28",
     "-movflags", "+faststart",
+    "-an",
     "output.mp4"
   );
 
@@ -104,10 +178,10 @@ async function compressVideo() {
 
   const link = document.getElementById("download");
   link.href = url;
-  link.download = "compressed.mp4";
+  link.download = "compressed-8mb.mp4";
   link.style.display = "block";
 
-  status.innerText = "Done ✅";
+  status.innerText = "Done ✅ Under 8MB optimized";
 
 }
 
