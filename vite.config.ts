@@ -4,14 +4,19 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+
+  base: '/', // ✅ CORRECT for custom domain
+
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
+
   server: {
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
