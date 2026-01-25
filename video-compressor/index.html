@@ -20,7 +20,6 @@ body {
   background:#1c1c1c;
   padding:20px;
   border-radius:14px;
-  box-shadow:0 0 20px rgba(0,0,0,.5);
 }
 
 .dropbox {
@@ -63,7 +62,6 @@ button {
   display:none;
   margin-top:15px;
   color:#00ff90;
-  font-weight:bold;
 }
 </style>
 </head>
@@ -74,13 +72,13 @@ button {
 
 <h2>8MB Video Compressor</h2>
 
-<div class="dropbox" onclick="fileInput.click()">
+<div class="dropbox" id="dropbox">
   <p id="fileLabel">Click or Drop Video Here</p>
 </div>
 
 <input type="file" id="fileInput" accept="video/*" hidden>
 
-<button onclick="compressVideo()">Compress to 8MB</button>
+<button id="compressBtn">Compress to 8MB</button>
 
 <div class="progress">
   <div class="bar" id="progressBar"></div>
@@ -88,103 +86,114 @@ button {
 
 <p id="status"></p>
 
-<a id="download">Download Compressed Video</a>
+<a id="download">Download Video</a>
 
 </div>
 
-<!-- FFmpeg (CORS safe) -->
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+<!-- Load FFmpeg FIRST -->
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
 
 <script>
+window.addEventListener("load", () => {
 
-const { createFFmpeg, fetchFile } = FFmpeg;
-const ffmpeg = createFFmpeg({
-  log: false,
-  progress: p => {
-    document.getElementById("progressBar").style.width =
-      Math.round(p.ratio * 100) + "%";
+  if (!window.FFmpeg) {
+    document.getElementById("status").innerText =
+      "FFmpeg failed to load. Refresh page.";
+    return;
   }
-});
 
-const fileInput = document.getElementById("fileInput");
-const label = document.getElementById("fileLabel");
+  const { createFFmpeg, fetchFile } = FFmpeg;
 
-fileInput.onchange = () => {
-  label.innerText = fileInput.files[0].name;
-};
+  const ffmpeg = createFFmpeg({
+    log: false,
+    progress: p => {
+      document.getElementById("progressBar").style.width =
+        Math.round(p.ratio * 100) + "%";
+    }
+  });
 
-// Drag & Drop
-document.querySelector(".dropbox").addEventListener("dragover", e => {
-  e.preventDefault();
-});
-
-document.querySelector(".dropbox").addEventListener("drop", e => {
-  e.preventDefault();
-  fileInput.files = e.dataTransfer.files;
-  label.innerText = e.dataTransfer.files[0].name;
-});
-
-async function compressVideo() {
-
+  const fileInput = document.getElementById("fileInput");
+  const dropbox = document.getElementById("dropbox");
+  const label = document.getElementById("fileLabel");
   const status = document.getElementById("status");
+  const compressBtn = document.getElementById("compressBtn");
+  const downloadLink = document.getElementById("download");
 
-  if (!fileInput.files.length) {
-    alert("Select a video first");
-    return;
-  }
+  dropbox.onclick = () => fileInput.click();
 
-  const file = fileInput.files[0];
+  fileInput.onchange = () => {
+    label.innerText = fileInput.files[0].name;
+  };
 
-  if (file.size > 300 * 1024 * 1024) {
-    alert("Video too large for browser compression (300MB max)");
-    return;
-  }
+  dropbox.addEventListener("dragover", e => {
+    e.preventDefault();
+  });
 
-  status.innerText = "Loading engine (first run slow)...";
+  dropbox.addEventListener("drop", e => {
+    e.preventDefault();
+    fileInput.files = e.dataTransfer.files;
+    label.innerText = e.dataTransfer.files[0].name;
+  });
 
-  await ffmpeg.load();
+  compressBtn.onclick = async () => {
 
-  status.innerText = "Analyzing video...";
+    if (!fileInput.files.length) {
+      alert("Select a video first");
+      return;
+    }
 
-  ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
+    const file = fileInput.files[0];
 
-  // Estimate duration (quick trick)
-  const video = document.createElement("video");
-  video.src = URL.createObjectURL(file);
-  await video.play().catch(()=>{});
-  const duration = video.duration;
-  video.remove();
+    if (file.size > 300 * 1024 * 1024) {
+      alert("Max 300MB input allowed");
+      return;
+    }
 
-  // Calculate bitrate for ~8MB target
-  const targetSize = 8 * 1024 * 1024 * 8; // bits
-  const videoBitrate = Math.floor((targetSize / duration) * 0.92);
+    status.innerText = "Loading engine (first time slow)...";
 
-  status.innerText = "Compressing to ~8MB...";
+    await ffmpeg.load();
 
-  await ffmpeg.run(
-    "-i", "input.mp4",
-    "-vf", "scale=1280:-2",
-    "-b:v", videoBitrate.toString(),
-    "-preset", "veryfast",
-    "-movflags", "+faststart",
-    "-an",
-    "output.mp4"
-  );
+    status.innerText = "Reading video...";
 
-  const data = ffmpeg.FS("readFile", "output.mp4");
+    ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
 
-  const blob = new Blob([data.buffer], { type: "video/mp4" });
-  const url = URL.createObjectURL(blob);
+    // Get duration
+    const video = document.createElement("video");
+    video.src = URL.createObjectURL(file);
+    await video.play().catch(()=>{});
+    const duration = video.duration;
+    video.remove();
 
-  const link = document.getElementById("download");
-  link.href = url;
-  link.download = "compressed-8mb.mp4";
-  link.style.display = "block";
+    // Target 8MB bitrate calculation
+    const targetBits = 8 * 1024 * 1024 * 8;
+    const bitrate = Math.floor((targetBits / duration) * 0.92);
 
-  status.innerText = "Done ✅ Under 8MB optimized";
+    status.innerText = "Compressing to ~8MB...";
 
-}
+    await ffmpeg.run(
+      "-i", "input.mp4",
+      "-vf", "scale=1280:-2",
+      "-b:v", bitrate.toString(),
+      "-preset", "veryfast",
+      "-movflags", "+faststart",
+      "-an",
+      "output.mp4"
+    );
 
+    const data = ffmpeg.FS("readFile", "output.mp4");
+
+    const blob = new Blob([data.buffer], { type: "video/mp4" });
+    const url = URL.createObjectURL(blob);
+
+    downloadLink.href = url;
+    downloadLink.download = "compressed-8mb.mp4";
+    downloadLink.style.display = "block";
+
+    status.innerText = "Done ✅";
+
+  };
+
+});
 </script>
 
 </body>
