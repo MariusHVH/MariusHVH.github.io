@@ -37,9 +37,10 @@ document.getElementById('compressBtn').addEventListener('click', async () => {
   
   const progressBar = document.querySelector('#progress div');
   
+  // Load FFmpeg and point wasmURL to CDN
   if (!ffmpeg.isLoaded()) await ffmpeg.load({ 
-    coreURL: 'ffmpeg-core.js',
-    wasmURL: 'ffmpeg-core.wasm'
+    coreURL: 'ffmpeg-core.js', 
+    wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/ffmpeg-core.wasm' 
   });
 
   ffmpeg.setProgress(({ ratio }) => {
@@ -49,7 +50,7 @@ document.getElementById('compressBtn').addEventListener('click', async () => {
   const name = 'input.mp4';
   ffmpeg.FS('writeFile', name, new Uint8Array(await videoFile.arrayBuffer()));
   
-  // compress video to roughly 8MB
+  // compress video
   await ffmpeg.run('-i', name, '-b:v', '8000k', '-bufsize', '8000k', 'output.mp4');
   
   const data = ffmpeg.FS('readFile', 'output.mp4');
