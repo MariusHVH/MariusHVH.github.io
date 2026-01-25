@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>8MB Video Compressor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 30px;
+}
+
+.box {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 400px;
+  margin: auto;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  background: #00bfff;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+#download {
+  display: none;
+  margin-top: 15px;
+  color: #00ff90;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>8MB Video Compressor</h2>
+
+  <input type="file" id="upload" accept="video/*">
+
+  <button onclick="compress()">Compress Video</button>
+
+  <p id="status"></p>
+
+  <a id="download">Download Compressed Video</a>
+</div>
+
+<script type="module">
+import { createFFmpeg, fetchFile } from "https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js";
+
+const ffmpeg = createFFmpeg({ log: false });
+
+async function compress() {
+
+  const input = document.getElementById("upload");
+  const status = document.getElementById("status");
+
+  if (!input.files.length) {
+    alert("Select a video first");
+    return;
+  }
+
+  const file = input.files[0];
+
+  status.innerText = "Loading compressor (first time takes 20s)...";
+
+  await ffmpeg.load();
+
+  status.innerText = "Compressing...";
+
+  ffmpeg.FS("writeFile", "input.mp4", await fetchFile(file));
+
+  await ffmpeg.run(
+    "-i", "input.mp4",
+    "-vf", "scale=1280:-2",
+    "-preset", "veryfast",
+    "-crf", "28",
+    "-movflags", "+faststart",
+    "output.mp4"
+  );
+
+  const data = ffmpeg.FS("readFile", "output.mp4");
+
+  const blob = new Blob([data.buffer], { type: "video/mp4" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.getElementById("download");
+  link.href = url;
+  link.download = "compressed.mp4";
+  link.style.display = "block";
+
+  status.innerText = "Done ✅ Ready to download";
+}
+
+window.compress = compress;
+</script>
+
+</body>
+</html>
