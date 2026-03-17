@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TitleName</title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* General styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Background video/GIF */
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* "Click to reveal" screen */
+        .preload-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        .preload-text {
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Main content */
+        .main-content {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Common styles for all elements */
+        .profile-card,
+        .discord-box,
+        .music-player {
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+            background-color: rgba(20, 20, 23, 0.5);
+            color: #efe6e6;
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-card.animate-in,
+        .discord-box.animate-in,
+        .music-player.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Profile card */
+        .profile-card {
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Banner */
+        .profile-banner {
+            width: 100%;
+            height: 200px;
+            margin-bottom: -95px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 25px;
+            border-bottom-right-radius: 0px;
+            border-bottom-left-radius: 0px;
+        }
+
+        .profile-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+        }
+
+        /* Profile picture */
+        .profile-pic-container {
+            margin-top: -70px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-pic {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.3s;
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.08);
+        }
+
+        /* Text content */
+        .profile-content {
+            padding: 0 30px 30px;
+            text-align: center;
+        }
+
+        .profile-name {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Social media icons */
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .social-icon {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-size: 24px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+        }
+
+        .profile-description {
+            margin-bottom: 20px;
+            font-size: 15px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        /* Discord box with dynamic info */
+        .discord-box {
+            padding: 20px;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+            cursor: pointer;
+        }
+
+        .discord-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .discord-pic {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .discord-info {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .discord-name {
+            font-weight: bold;
+            font-size: 19px;
+            margin-bottom: 3px;
+        }
+
+        .discord-status {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-online {
+            background: #3ba55c;
+        }
+
+        .status-idle {
+            background: #faa61a;
+        }
+
+        .status-dnd {
+            background: #ed4245;
+        }
+
+        .status-offline {
+            background: #747f8d;
+        }
+
+        .discord-activity {
+            font-size: 14px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            display: none; /* Oculto por defecto */
+        }
+
+        .activity-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .activity-image {
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* Music player */
+        .music-player {
+            padding: 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+            animation: fadeInUp 0.8s ease-out 0.5s forwards;
+        }
+
+        .song-cover {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .song-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .song-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .song-artist {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #fff;
+            border-radius: 5px;
+            width: 0%;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .play-pause {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            padding: 5px;
+        }
+
+        .play-pause:hover {
+            transform: scale(1.1);
+        }
+
+        /* Import Poppins font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+    </style>
+</head>
+<body>
+    <!-- Background video/GIF -->
+    <video id="video-background" autoplay muted loop>
+        <source src="images/background.mp4" type="video/mp4">
+    </video>
+
+    <!-- Audio (hidden) -->
+    <audio id="music-player" loop>
+        <source src="music/song.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- "Click to reveal" screen -->
+    <div class="preload-screen">
+        <div class="preload-text">Click to reveal</div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Profile card -->
+            <div class="profile-card">
+                <div class="profile-banner">
+                    <img src="images/banner.jpg" alt="Profile banner">
+                </div>
+                <div class="profile-pic-container">
+                    <img src="images/profile.jpg" class="profile-pic" alt="Profile picture">
+                </div>
+                <div class="profile-content">
+                    <div class="profile-name">YourName</div>
+                    <div class="social-icons">
+                        <a href="#" target="_blank" class="social-icon">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" target="_blank" class="social-icon">
+                            <i class="fab fa-discord"></i>
+                        </a>
+                        <a href="#" target="_blank" class="social-icon">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" target="_blank" class="social-icon">
+                            <i class="fab fa-roblox"></i>
+                        </a>
+                    </div>
+                    <div class="profile-description">
+                        Your description here
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discord box with dynamic info -->
+            <div class="discord-box" id="discord-profile">
+                <div class="discord-header">
+                    <img id="discord-avatar" class="discord-pic" src="images/discord.jpg" alt="Discord Avatar">
+                    <div class="discord-info">
+                        <div class="discord-name" id="discord-username">Loading...</div>
+                        <div class="discord-status">
+                            <div class="status-indicator" id="status-indicator"></div>
+                            <span id="discord-status-text">Status: -</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity section - hidden by default -->
+                <div class="discord-activity" id="activity-section">
+                    <div class="activity-label">Activity:</div>
+                    <div id="discord-activity-name">-</div>
+                    <div id="discord-activity-time">Time: -</div>
+                    <img id="activity-image" class="activity-image" src="" alt="">
+                </div>
+
+                <!-- Spotify section - hidden by default -->
+                <div class="discord-activity" id="spotify-section">
+                    <div class="activity-label">Listening on Spotify:</div>
+                    <div id="discord-spotify-info">-</div>
+                    <img id="spotify-image" class="activity-image" src="" alt="">
+                </div>
+            </div>
+
+            <!-- Music player -->
+            <div class="music-player">
+                <img src="images/album-cover.jpg" class="song-cover" alt="Album cover">
+                <div class="song-info">
+                    <div class="song-title">Your single title</div>
+                    <div class="song-artist">Creator of the song ig</div>
+                    <div class="progress-container" id="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <div class="time-info">
+                        <span id="current-time">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+                <button class="play-pause" id="play-button">▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // "Click to reveal" effect
+        document.querySelector('.preload-screen').addEventListener('click', function() {
+            this.style.display = 'none';
+            document.querySelector('.main-content').style.opacity = '1';
+            
+            // Animate elements in
+            document.querySelector('.profile-card').classList.add('animate-in');
+            document.querySelector('.discord-box').classList.add('animate-in');
+            document.querySelector('.music-player').classList.add('animate-in');
+            
+            // Start music automatically on click
+            const audioPlayer = document.getElementById('music-player');
+            audioPlayer.volume = 0.5;
+            audioPlayer.play().catch(e => console.log("Autoplay prevented:", e));
+            
+            // Change button to pause
+            document.getElementById('play-button').textContent = '⏸';
+            
+            // Start loading Discord status
+            fetchDiscordStatus();
+        });
+
+        // Title animation (NerdDucky)
+        const titleText = "TitleName";
+        let currentIndex = 0;
+        let isDeleting = false;
+        const typingSpeed = 150;
+
+        function typeTitle() {
+            const currentTitle = titleText.slice(0, currentIndex) + "|";
+            document.title = currentTitle;
+
+            if (!isDeleting && currentIndex < titleText.length) {
+                currentIndex++;
+            } else if (isDeleting && currentIndex > 0) {
+                currentIndex--;
+            }
+
+            if (currentIndex === titleText.length && !isDeleting) {
+                setTimeout(() => isDeleting = true, 1000);
+            } else if (currentIndex === 0 && isDeleting) {
+                isDeleting = false;
+            }
+
+            setTimeout(typeTitle, isDeleting ? typingSpeed / 2 : typingSpeed);
+        }
+
+        typeTitle();
+
+        // Music player functionality
+        const audioPlayer = document.getElementById('music-player');
+        const playButton = document.getElementById('play-button');
+        const progressBar = document.getElementById('progress-bar');
+        const progressContainer = document.getElementById('progress-container');
+        const currentTimeElement = document.getElementById('current-time');
+        const durationElement = document.getElementById('duration');
+
+        // Update progress bar
+        audioPlayer.addEventListener('timeupdate', () => {
+            const { currentTime, duration } = audioPlayer;
+            const progressPercent = (currentTime / duration) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            
+            // Format and display time
+            currentTimeElement.textContent = formatTime(currentTime);
+            if (duration) {
+                durationElement.textContent = formatTime(duration);
+            }
+        });
+
+        // Click on progress bar to skip
+        progressContainer.addEventListener('click', (e) => {
+            const width = progressContainer.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audioPlayer.duration;
+            audioPlayer.currentTime = (clickX / width) * duration;
+        });
+
+        // Play/pause button
+        playButton.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playButton.textContent = '⏸';
+            } else {
+                audioPlayer.pause();
+                playButton.textContent = '▶';
+            }
+        });
+
+        // Format time (mm:ss)
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Update duration when metadata is loaded
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationElement.textContent = formatTime(audioPlayer.duration);
+        });
+
+        // Functionality to show Discord status
+        const userId = "YourUserId"; // Your Discord ID
+
+        function formatDuration(startTimestamp) {
+            const now = Date.now();
+            const diff = now - startTimestamp;
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            return `${minutes}m ${seconds}s`;
+        }
+
+        async function fetchDiscordStatus() {
+            try {
+                const res = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
+                const data = await res.json();
+
+                if (!data.success) return;
+
+                const d = data.data;
+
+                // Avatar
+                const avatarURL = `https://cdn.discordapp.com/avatars/${d.discord_user.id}/${d.discord_user.avatar}.png?size=128`;
+                document.getElementById("discord-avatar").src = avatarURL;
+
+                // Username
+                const username = `${d.discord_user.username}#${d.discord_user.discriminator}`;
+                document.getElementById("discord-username").textContent = username;
+
+                // Status
+                const statusText = {
+                    online: "Online",
+                    idle: "Idle",
+                    dnd: "Do Not Disturb",
+                    offline: "Offline"
+                };
+                
+                document.getElementById("discord-status-text").textContent = statusText[d.discord_status] || d.discord_status;
+                
+                // Update status indicator
+                const statusIndicator = document.getElementById("status-indicator");
+                statusIndicator.className = "status-indicator";
+                statusIndicator.classList.add(`status-${d.discord_status}`);
+
+                // Hide all activity sections by default
+                document.getElementById("activity-section").style.display = "none";
+                document.getElementById("spotify-section").style.display = "none";
+
+                // Activity (game)
+                const game = d.activities.find(a => a.type === 0);
+                const gameImg = document.getElementById("activity-image");
+
+                if (game) {
+                    document.getElementById("activity-section").style.display = "block";
+                    document.getElementById("discord-activity-name").textContent = game.name;
+                    
+                    if (game.timestamps?.start) {
+                        document.getElementById("discord-activity-time").textContent = `For: ${formatDuration(game.timestamps.start)}`;
+                    } else {
+                        document.getElementById("discord-activity-time").textContent = "Time: unknown";
+                    }
+
+                    // Game image from large_image
+                    if (game.assets?.large_image) {
+                        let imgKey = game.assets.large_image;
+                        if (imgKey.startsWith("mp:external")) {
+                            gameImg.src = imgKey.replace(/^mp:/, "https:");
+                        } else {
+                            gameImg.src = `https://cdn.discordapp.com/app-assets/${game.application_id}/${imgKey}.png`;
+                        }
+                        gameImg.style.display = "block";
+                    } else {
+                        gameImg.style.display = "none";
+                    }
+                }
+
+                // Spotify info
+                const spotifyImg = document.getElementById("spotify-image");
+
+                if (d.listening_to_spotify && d.spotify) {
+                    document.getElementById("spotify-section").style.display = "block";
+                    const song = `${d.spotify.song} - ${d.spotify.artist}`;
+                    document.getElementById("discord-spotify-info").textContent = song;
+                    spotifyImg.src = d.spotify.album_art_url;
+                    spotifyImg.style.display = "block";
+                }
+            } catch (error) {
+                console.error("Error fetching Discord status:", error);
+                document.getElementById("discord-username").textContent = "Load error";
+                document.getElementById("discord-status-text").textContent = "Status: unknown";
+            }
+        }
+
+        // Redirect to Discord profile on click
+        document.getElementById('discord-profile').addEventListener('click', function() {
+            window.open('#', '_blank');
+        });
+
+        // Update status every 10 seconds if page is visible
+        let statusInterval;
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                fetchDiscordStatus();
+                statusInterval = setInterval(fetchDiscordStatus, 10000);
+            } else {
+                clearInterval(statusInterval);
+            }
+        });
+
+        // Start interval when page loads (if not in preload)
+        if (document.querySelector('.preload-screen').style.display === 'none') {
+            statusInterval = setInterval(fetchDiscordStatus, 10000);
+        }
+    </script>
+</body>
+</html>
