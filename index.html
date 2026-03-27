@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>wek @ zinc.lol</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/all.min.css">
+  <script src="js/snowhide.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #e0def4;
+      font-family: monospace;
+      overflow: hidden;
+      cursor: url('media/cursor.png'), auto;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .noise {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.05;
+      z-index: 0;
+    }
+
+    #bg-video.fade-in {
+      animation: fadeIn 2s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        filter: blur(8px);
+      }
+      to {
+        opacity: 1;
+        filter: blur(8px);
+      }
+    }
+
+    #bg-video {
+      filter: blur(8px);
+    }
+
+    #enter-text {
+      transition: opacity 1s ease;
+    }
+
+    .fade-out {
+      opacity: 0 !important;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-blur: sm;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+      width: 320px;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    #music-controller {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .music-button {
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .music-button:hover {
+      transform: scale(1.2);
+    }
+
+    #time-progress {
+      font-size: 1rem;
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    #progress-bar {
+      width: 100%;
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.75rem;
+    }
+
+    #progress-fill {
+      height: 100%;
+      background-color: #e0def4;
+      width: 0%;
+      transition: width 0.2s linear;
+    }
+
+    #view-counter {
+      position: absolute;
+      bottom: 3px;
+      left: 12px;
+      font-size: 0.875rem;
+      color: #ffffff60;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #typewriter {
+      color: #b0b0b0;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      border-right: 2px solid #ffffff50;
+      padding-right: 5px;
+      animation: typing 3s steps(40) 1s forwards, blink 0.75s step-end infinite;
+    }
+
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+  </style>
+</head>
+<body class="relative min-h-screen flex flex-col items-center justify-center bg-black">
+
+  <video id="bg-video" class="hidden fixed top-0 left-0 w-full h-full object-cover z-[-1]" loop muted>
+    <source src="media/video.mp4" type="video/mp4">
+  </video>
+
+  <audio id="bg-audio" preload="auto"></audio>
+
+  <div class="noise"></div>
+
+  <div id="user-ip" class="absolute top-4 left-1/2 transform -translate-x-1/2 text-sm text-white/60 z-20 opacity-0 transition-opacity duration-1000">
+  </div>
+
+  <div id="main-content" class="flex flex-col items-center justify-center text-center text-white absolute inset-0 opacity-0 transition-opacity duration-1000 z-10 pointer-events-auto">
+    <div id="tilt-card" class="card">
+      <div class="mb-4">
+        <img src="images/pfp.png" alt="Profile Picture" class="w-24 h-24 rounded-full mx-auto border border-white/10 shadow-lg transition-transform duration-700 hover:rotate-[360deg]">
+      </div>
+      <div class="text-2xl font-bold mb-1 relative inline-block">
+  wek
+  <img src="media/sparkle_white.gif" alt="sparkle"
+       class="absolute top-0 left-0 w-32 h-auto opacity-80 pointer-events-none" />
+</div>
+
+      <div class="h-6 mb-4">
+        <span id="typewriter"></span>
+      </div>
+      <div class="flex flex-wrap justify-center gap-4 text-2xl mb-6">
+        <a href="https://discord.gg/mU7e7jmRJV" class="z-10 relative transition transform hover:scale-125 hover:text-indigo-400 duration-200"><i class="fa-brands fa-discord"></i></a>
+        <a href="https://soundcloud.com/wekzz" class="z-10 relative transition transform hover:scale-125 hover:text-orange-400 duration-200"><i class="fa-brands fa-soundcloud"></i></a>
+        <a href="https://www.instagram.com/weker.z" class="z-10 relative transition transform hover:scale-125 hover:text-pink-400 duration-200"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+      <div id="view-counter">
+        <i class="fa-solid fa-eye"></i>
+        <span>Loading...</span>
+      </div>
+    </div>
+
+    <div id="music-controller-card" class="card">
+      <div id="music-controller">
+        <button id="prev-btn" class="music-button text-white"><i class="fa-solid fa-backward"></i></button>
+        <div id="time-progress" class="text-white">00:00 / 00:00</div>
+        <button id="playpause-btn" class="music-button text-white"><i class="fa-solid fa-play"></i></button>
+        <button id="next-btn" class="music-button text-white"><i class="fa-solid fa-forward"></i></button>
+      </div>
+      <div id="progress-bar">
+        <div id="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="enter-text" class="absolute inset-0 flex items-center justify-center text-white text-3xl font-bold opacity-0 z-20 transition duration-300 hover:text-fuchsia-400" style="pointer-events: auto;">
+    click to enter
+  </div>
+
+  <script src="js/vanilla-tilt.js"></script>
+  <script>
+    VanillaTilt.init(document.querySelectorAll("#tilt-card, #music-controller-card"), {
+    max: 15,
+    speed: 400,
+    glare: true,
+    "max-glare": 0.5,
+    scale: 1.03
+  });
+
+  </script>
+  <script>
+    const enterText = document.getElementById('enter-text');
+    const mainContent = document.getElementById('main-content');
+    const bgVideo = document.getElementById('bg-video');
+    const bgAudio = document.getElementById('bg-audio');
+    const userIp = document.getElementById('user-ip');
+    const progressFill = document.getElementById('progress-fill');
+    const viewCounter = document.getElementById('view-counter').querySelector('span');
+
+    let songs = [
+      'media/song1.mp3',
+      'media/song2.mp3'
+    ];
+
+    let currentSongIndex = 0;
+
+    window.onload = () => {
+      setTimeout(() => {
+        enterText.classList.remove('opacity-0');
+        enterText.classList.add('opacity-100');
+      }, 300);
+    };
+
+    document.body.addEventListener('click', () => {
+      enterText.classList.add('fade-out');
+      enterText.style.pointerEvents = "none";
+      bgVideo.classList.remove('hidden');
+      bgVideo.classList.add('fade-in');
+      bgVideo.play();
+
+      const randomSong = songs[Math.floor(Math.random() * songs.length)];
+      bgAudio.src = randomSong;
+      bgAudio.loop = true;
+      bgAudio.play().catch(e => console.warn("Autoplay failed:", e));
+
+      mainContent.classList.remove('opacity-0');
+      mainContent.classList.add('opacity-100');
+
+      userIp.classList.add('opacity-100');
+
+      if (typeof startSnow === "function") {
+        startSnow();
+      }
+
+      fetch('https://wekviews.vbmtlmao.workers.dev/?url=https://zinc.lol')
+        .then(response => response.json())
+        .then(data => {
+          viewCounter.textContent = data.views || '0';
+        });
+    }, { once: true });
+
+    bgAudio.ontimeupdate = () => {
+      const currentTime = formatTime(bgAudio.currentTime);
+      const duration = formatTime(bgAudio.duration);
+      document.getElementById('time-progress').textContent = `${currentTime} / ${duration}`;
+
+      if (!isNaN(bgAudio.duration)) {
+        const progressPercent = (bgAudio.currentTime / bgAudio.duration) * 100;
+        progressFill.style.width = `${progressPercent}%`;
+      }
+    };
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    const playPauseBtn = document.getElementById('playpause-btn');
+    playPauseBtn.addEventListener('click', () => {
+      if (bgAudio.paused) {
+        bgAudio.play();
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+      } else {
+        bgAudio.pause();
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+      }
+    });
+
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.addEventListener('click', () => {
+      currentSongIndex = (currentSongIndex + 1) % songs.length;
+      bgAudio.src = songs[currentSongIndex];
+      bgAudio.play();
+      playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    });
+
+    const prevBtn = document.getElementById('prev-btn');
+    prevBtn.addEventListener('click', () => {
+      currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+      bgAudio.src = songs[currentSongIndex];
+      bgAudio.play();
+      playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    });
+
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", 'https://api.ipify.org', false);
+    try {
+      xmlHttp.send(null);
+      var real_ip = xmlHttp.responseText;
+    } catch (err) {
+      var real_ip = "127.0.0.1";
+    }
+    document.getElementById("user-ip").innerHTML = `${real_ip}`;
+
+    const phrases = [
+      "bloodyfools!",
+      "discord @wekerr_",
+      "no hablas ingles",
+      "i dont wanna die on my own.",
+      "i might chance it.",
+      "fuck newgens.",
+      "good vibes only",
+      "zinc is my daddy.",
+      "heres my ip: " + real_ip
+    ];
+
+    const typewriter = document.getElementById("typewriter");
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let deleting = false;
+
+    function typeLoop() {
+      const currentPhrase = phrases[phraseIndex];
+      if (deleting) {
+        typewriter.textContent = currentPhrase.substring(0, charIndex--);
+        if (charIndex < 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+          setTimeout(typeLoop, 500);
+        } else {
+          setTimeout(typeLoop, 40);
+        }
+      } else {
+        typewriter.textContent = currentPhrase.substring(0, charIndex++);
+        if (charIndex > currentPhrase.length) {
+          deleting = true;
+          setTimeout(typeLoop, 1200);
+        } else {
+          setTimeout(typeLoop, 70);
+        }
+      }
+    }
+
+    typeLoop();
+
+    function createNoise() {
+      const canvas = document.createElement('canvas');
+      canvas.classList.add('noise');
+      const ctx = canvas.getContext('2d');
+
+      const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      };
+
+      resize();
+      window.addEventListener('resize', resize);
+
+      document.body.appendChild(canvas);
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const pixels = 3000;
+        for (let i = 0; i < pixels; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const color = Math.random() < 0.5 ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)';
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, 1, 1);
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    }
+
+    createNoise();
+  </script>
+</body>
+</html>
