@@ -1,0 +1,293 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:           #0f0f0f;
+  --card-bg:      #161616;
+  --input-bg:     #1f1f1f;
+  --pill-bg:      #1f1f1f;
+  --border:       #2a2a2a;
+  --border-hover: #555;
+  --red:          #f10235;
+  --red-hover:    #c8012d;
+  --red-tint:     rgba(241, 2, 53, 0.15);
+  --green:        #4caf50;
+  --green-bg:     #0f1a0f;
+  --green-border: #1a3a1a;
+  --radius-sm:    8px;
+  --radius-md:    10px;
+  --radius-lg:    16px;
+  --font:         'Geist', system-ui, sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: #ffffff;
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 3rem 2rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+.hero { text-align: center; }
+
+.title {
+  font-size: 52px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.title .red { color: #ff2b2b; }
+
+.subtitle {
+  font-size: 17px;
+  color: #888888;
+}
+
+.card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 40px 34px;
+}
+
+.input-row {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.url-input {
+  flex: 1;
+  height: 54px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 15px;
+  padding: 0 18px;
+  outline: none;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.url-input::placeholder { color: rgba(255,255,255,0.35); }
+.url-input:focus { border-color: rgba(241, 2, 53, 0.5); }
+.url-input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.fetch-btn {
+  height: 54px;
+  padding: 0 30px;
+  min-width: 130px;
+  background: var(--red);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, color 0.2s;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.fetch-btn:hover:not(:disabled) { background: var(--red-hover); }
+.fetch-btn:active:not(:disabled) { transform: scale(0.97); }
+
+/* Grey loading state */
+.fetch-btn.loading {
+  background: #2e2e2e;
+  color: #666666;
+  cursor: not-allowed;
+  letter-spacing: 4px;
+}
+
+/* Green download-ready state (Vibrant) */
+.fetch-btn.download {
+  background: #22c55e;
+  border: none;
+  color: #ffffff;
+}
+.fetch-btn.download:hover:not(:disabled) { 
+  background: #16a34a;
+}
+
+.section { margin-bottom: 28px; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 14px;
+}
+
+.pills { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.pill {
+  height: 42px;
+  padding: 0 22px;
+  background: var(--pill-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.pill:hover { border-color: var(--border-hover); }
+
+.pill.active {
+  background: var(--red-tint);
+  border-color: var(--red);
+  color: #ffffff;
+}
+
+.status {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+}
+
+.status.visible { display: flex; }
+.status.error { background: #1a0f0f; border-color: #3a1a1a; color: #ff5555; }
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.status.idle .status-dot,
+.status.error .status-dot { animation: none; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+/* Fallback button */
+.fallback-btn {
+  display: none;
+  width: 100%;
+  margin-top: 12px;
+  height: 44px;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: var(--radius-md);
+  color: #888;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.fallback-btn:hover {
+  border-color: #555;
+  color: #fff;
+}
+
+/* ── Video Preview Card ─────────────────────────────────── */
+.preview {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding: 14px 16px;
+  background: #232323;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  animation: previewIn 0.25s ease;
+}
+
+@keyframes previewIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.preview-thumb {
+  width: 112px;
+  height: 63px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #222;
+}
+
+.preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.preview-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-duration {
+  font-size: 12px;
+  color: #aaaaaa;
+  font-weight: 500;
+}
+
+/* Skeleton shimmer while loading */
+.preview-thumb.skeleton,
+.preview-title.skeleton,
+.preview-duration.skeleton {
+  background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 50%, #1e1e1e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+  color: transparent;
+}
+
+.preview-title.skeleton  { width: 200px; height: 14px; }
+.preview-duration.skeleton { width: 60px; height: 12px; }
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

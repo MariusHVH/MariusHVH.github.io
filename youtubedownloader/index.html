@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Downloader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="global.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1 class="title"><span class="red">YouTube</span> Downloader</h1>
+      <p class="subtitle">Paste a video link and choose format</p>
+    </div>
+
+    <div class="card">
+      <div class="input-row">
+        <input
+          id="urlInput"
+          class="url-input"
+          type="text"
+          placeholder="https://www.youtube.com/watch?v=..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="actionBtn" class="fetch-btn">Fetch</button>
+      </div>
+
+      <!-- Video preview (hidden until URL resolved) -->
+      <div class="preview" id="preview" style="display:none">
+        <img class="preview-thumb" id="previewThumb" src="" alt="" />
+        <div class="preview-info">
+          <div class="preview-title" id="previewTitle"></div>
+          <div class="preview-duration" id="previewDuration"></div>
+        </div>
+      </div>
+
+      <div class="section" id="resSection">
+        <div class="section-label">Resolution</div>
+        <div class="pills" id="resGroup">
+          <button class="pill active" data-value="best">Best</button>
+          <button class="pill" data-value="4k">4K</button>
+          <button class="pill" data-value="1440p">1440p</button>
+          <button class="pill" data-value="1080p">1080p</button>
+          <button class="pill" data-value="720p">720p</button>
+        </div>
+      </div>
+
+      <div class="section" id="codecSection">
+        <div class="section-label">Codec</div>
+        <div class="pills" id="codecGroup">
+          <button class="pill active" data-value="h264">H.264</button>
+          <button class="pill" data-value="h265">H.265</button>
+          <button class="pill" data-value="vp9">VP9</button>
+          <button class="pill" data-value="av1">AV1</button>
+          <button class="pill" data-value="mp3">MP3</button>
+        </div>
+      </div>
+
+      <div class="status" id="status">
+        <div class="status-dot"></div>
+        <span id="statusText"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="fetcher.js"></script>
+  <script>
+    const state = {
+      resolution: 'best',
+      codec: 'h264',
+      phase: 'idle',
+      downloadUrl: null,
+      filename: null,
+    };
+
+    const urlInput    = document.getElementById('urlInput');
+    const actionBtn   = document.getElementById('actionBtn');
+    const statusEl    = document.getElementById('status');
+    const statusText  = document.getElementById('statusText');
+    const previewEl   = document.getElementById('preview');
+    const previewThumb = document.getElementById('previewThumb');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewDuration = document.getElementById('previewDuration');
+
+    // ── Preview logic ─────────────────────────────────────────
+    let previewDebounce = null;
+    let previewAbort    = null;
+
+    function showPreviewSkeleton() {
+      previewEl.style.display = 'flex';
+      previewThumb.src = '';
+      previewThumb.classList.add('skeleton');
+      previewTitle.textContent = '';
+      previewTitle.classList.add('skeleton');
+      previewDuration.textContent = '';
+      previewDuration.classList.add('skeleton');
+    }
+
+    function formatDuration(raw) {
+      if (!raw) return '';
+      const parts = raw.split(':');
+      if (parts.length === 3) return raw + ' Hour';
+      if (parts.length === 2) {
+        if (parts[0] === '0' || parts[0] === '00') return parseInt(parts[1]) + ' Seconds';
+        return raw + ' Minute';
+      }
+      return raw + ' Seconds';
+    }
+
+    function populatePreview({ title, thumbnail, duration }) {
+      previewThumb.src = thumbnail;
+      previewThumb.classList.remove('skeleton');
+      previewTitle.textContent = title;
+      previewTitle.classList.remove('skeleton');
+      previewDuration.textContent = formatDuration(duration);
+      previewDuration.classList.remove('skeleton');
+    }
+
+    function hidePreview() {
+      previewEl.style.display = 'none';
+      previewThumb.src = '';
+      previewThumb.classList.remove('skeleton');
+      previewTitle.classList.remove('skeleton');
+      previewDuration.classList.remove('skeleton');
+    }
+
+    async function triggerPreview(url) {
+      clearTimeout(previewDebounce);
+      if (previewAbort) previewAbort.abort();
+
+      if (!isValidYouTubeUrl(url)) { hidePreview(); return; }
+
+      showPreviewSkeleton();
+
+      previewDebounce = setTimeout(async () => {
+        const controller = new AbortController();
+        previewAbort = controller;
+        try {
+          const info = await fetchVideoInfo(url);
+          if (!controller.signal.aborted) populatePreview(info);
+        } catch {
+          if (!controller.signal.aborted) hidePreview();
+        }
+      }, 700);
+    }
+
+    initPillGroup('resGroup', 'resolution');
+    initPillGroup('codecGroup', 'codec', value => {
+      const isAudio = value === 'mp3';
+      resSection.style.display = isAudio ? 'none' : 'block';
+    });
+
+    function showStatus(msg, type = 'loading') {
+      statusEl.className = 'status visible' + (type === 'error' ? ' error' : type === 'idle' ? ' idle' : '');
+      statusText.textContent = msg;
+    }
+
+    function hideStatus() { statusEl.className = 'status'; }
+
+    function setFetching() {
+      state.phase = 'fetching';
+      urlInput.disabled = true;
+      actionBtn.disabled = true;
+      actionBtn.textContent = '...';
+      actionBtn.className = 'fetch-btn loading';
+    }
+
+    function setReady(downloadUrl, filename) {
+      state.phase = 'ready';
+      state.downloadUrl = downloadUrl;
+      state.filename = filename;
+      urlInput.disabled = false;
+      actionBtn.disabled = false;
+      actionBtn.textContent = 'Download';
+      actionBtn.className = 'fetch-btn download';
+      showStatus('Ready! Click Download to save.', 'idle');
+    }
+
+    function resetToIdle() {
+      state.phase = 'idle';
+      state.downloadUrl = null;
+      state.filename = null;
+      urlInput.disabled = false;
+      actionBtn.disabled = false;
+      actionBtn.textContent = 'Fetch';
+      actionBtn.className = 'fetch-btn';
+      hideStatus();
+      hidePreview();
+    }
+
+    function isValidYouTubeUrl(url) {
+      try { return /youtube\.com|youtu\.be/.test(new URL(url).hostname); }
+      catch { return false; }
+    }
+
+    actionBtn.addEventListener('click', async () => {
+      if (state.phase === 'fetching') return;
+
+      if (state.phase === 'ready' && state.downloadUrl) {
+        triggerDownload(state.downloadUrl, state.filename);
+        showStatus('Download started! Check your downloads folder.', 'idle');
+        setTimeout(resetToIdle, 3500);
+        return;
+      }
+
+      const url = urlInput.value.trim();
+      if (!url) return showStatus('Please paste a YouTube URL first.', 'error');
+      if (!isValidYouTubeUrl(url)) return showStatus("That doesn't look like a valid YouTube URL.", 'error');
+
+      setFetching();
+      showStatus('Downloading… this may take a minute');
+
+      try {
+        const { downloadUrl, filename } = await fetchDownloadUrl(
+          url, 
+          state.resolution, 
+          state.codec, 
+          state.codec === 'mp3',
+          (progress) => {
+            showStatus(`Downloading… ${progress}%`);
+          }
+        );
+        setReady(downloadUrl, filename);
+      } catch (err) {
+        state.phase = 'idle';
+        urlInput.disabled = false;
+        actionBtn.disabled = false;
+        actionBtn.textContent = 'Fetch';
+        actionBtn.className = 'fetch-btn';
+        showStatus(err.message || 'Something went wrong. Try again.', 'error');
+      }
+    });
+
+    urlInput.addEventListener('input', () => {
+      const url = urlInput.value.trim();
+      if (state.phase === 'ready') resetToIdle();
+      triggerPreview(url);
+    });
+
+    urlInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && state.phase !== 'fetching') actionBtn.click();
+    });
+  </script>
+</body>
+</html>
