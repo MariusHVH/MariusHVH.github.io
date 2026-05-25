@@ -2,20 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Video Host</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Upload  Videos</title>
+    <style>
+        body { font-family: Arial; background: #111; color: #0f0; padding: 30px; text-align: center; }
+        button { padding: 15px 30px; font-size: 18px; background: #0f0; color: #000; border: none; cursor: pointer; }
+        #result { margin-top: 20px; font-size: 16px; word-break: break-all; }
+    </style>
 </head>
 <body>
-    <h1>Upload & Share  Videos</h1>
-    <input type="file" id="fileInput" accept="video/mp4,video/*">
-    <button onclick="getLink()">Get Discord Link</button>
+    <h1>Auto Upload to GitHub Pages</h1>
+    <p>Select video → Click Upload → Gets direct Discord embed link</p>
+    <input type="file" id="vid" accept="video/*" style="margin: 10px;">
+    <button onclick="autoUpload()">Upload Video Automatically</button>
     <div id="result"></div>
 
     <script>
-        function getLink() {
-            const file = document.getElementById('fileInput').files[0];
-            if (!file) return alert("Select video first");
-            const url = `https://mariusHVH.github.io/videos/${file.name}`;
-            document.getElementById('result').innerHTML = `Post this on Discord:<br><a href="${url}">${url}</a><br>It will embed and play directly. Manually upload the MP4 to /videos folder in repo first for real use.`;
+        const TOKEN = "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";
+        async function autoUpload() {
+            const file = document.getElementById('vid').files[0];
+            if (!file) return alert("Select a video first");
+            if (!file.name.toLowerCase().endsWith('.mp4')) return alert("Use MP4 for best Discord embed");
+
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const content = reader.result.split(',')[1];
+                const path = `videos/${file.name}`;
+                const url = `https://api.github.com/repos/MariusHVH/MariusHVH.github.io/contents/${path}`;
+
+                try {
+                    const res = await fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: "auto upload shooting video",
+                            content: content,
+                            branch: "main"
+                        })
+                    });
+
+                    if (res.ok) {
+                        const link = `https://mariusHVH.github.io/${path}`;
+                        const domainLink = `https://piqua.top/${path}`;
+                        document.getElementById('result').innerHTML = `
+                            ✅ Uploaded successfully!<br><br>
+                            <strong>Discord Link:</strong><br>
+                            <a href="${link}" target="_blank">${link}</a><br><br>
+                            <strong>Custom Domain:</strong><br>
+                            <a href="${domainLink}" target="_blank">${domainLink}</a><br><br>
+                            <em>Post this link in Discord - it will auto-embed as playable video.</em>
+                        `;
+                    } else {
+                        document.getElementById('result').innerHTML = "Upload failed. Check token or repo permissions.";
+                    }
+                } catch (e) {
+                    document.getElementById('result').innerHTML = "Error: " + e.message;
+                }
+            };
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
