@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Host</title>
+</head>
+<body>
+    <h1>Upload & Share  Videos</h1>
+    <input type="file" id="fileInput" accept="video/mp4,video/*">
+    <button onclick="getLink()">Get Discord Link</button>
+    <div id="result"></div>
+
+    <script>
+        function getLink() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return alert("Select video first");
+            const url = `https://mariusHVH.github.io/videos/${file.name}`;
+            document.getElementById('result').innerHTML = `Post this on Discord:<br><a href="${url}">${url}</a><br>It will embed and play directly. Manually upload the MP4 to /videos folder in repo first for real use.`;
+        }
+    </script>
+</body>
+</html>
