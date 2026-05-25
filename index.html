@@ -57,10 +57,10 @@
                             Post this in Discord - it auto-embeds as playable video.
                         `;
                     } else {
-                        document.getElementById('result').innerHTML = `Failed: ${data.message || 'Check token'}.`;
+                        document.getElementById('result').innerHTML = `Failed: ${data.message || 'Check token'}. <br><br>Delete this token. Go back to fine-grained token creation:<br>1. Select repo MariusHVH/MariusHVH.github.io (not adadada)<br>2. Set Contents permission to Read and write<br>3. Generate new token, paste below, commit.`;
                     }
                 } catch (e) {
-                    document.getElementById('result').innerHTML = "Error: " + e.message;
+                    document.getElementById('result').innerHTML = "Error: " + e.message + "<br>Try new token with correct repo + Contents R&W.";
                 }
             };
             reader.readAsDataURL(file);
