@@ -18,7 +18,7 @@
     <div id="result"></div>
 
     <script>
-        const TOKEN = "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"; // replace with fresh token if needed
+        const TOKEN = "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";
         async function autoUpload() {
             const file = document.getElementById('vid').files[0];
             if (!file) return alert("Select a video first");
@@ -57,10 +57,10 @@
                             Post it in Discord - it auto-embeds and plays.
                         `;
                     } else {
-                        document.getElementById('result').innerHTML = `Failed: ${data.message || 'Check token/repo'}. Regenerate PAT with repo scope.`;
+                        document.getElementById('result').innerHTML = `Failed: ${data.message || 'Bad token'}.`;
                     }
                 } catch (e) {
-                    document.getElementById('result').innerHTML = "Network error. Try again.";
+                    document.getElementById('result').innerHTML = "Error: " + e.message;
                 }
             };
             reader.readAsDataURL(file);
