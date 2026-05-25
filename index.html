@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Upload  Videos</title>
+    <title>Auto Upload Shooting Videos</title>
     <style>
         body { font-family: Arial; background: #111; color: #0f0; padding: 30px; text-align: center; }
         button { padding: 15px 30px; font-size: 18px; background: #0f0; color: #000; border: none; cursor: pointer; }
@@ -18,16 +18,15 @@
     <div id="result"></div>
 
     <script>
-        const TOKEN = "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";
+        const TOKEN = "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"; // replace with fresh token if needed
         async function autoUpload() {
             const file = document.getElementById('vid').files[0];
             if (!file) return alert("Select a video first");
-            if (!file.name.toLowerCase().endsWith('.mp4')) return alert("Use MP4 for best Discord embed");
 
             const reader = new FileReader();
             reader.onload = async () => {
                 const content = reader.result.split(',')[1];
-                const path = `videos/${file.name}`;
+                const path = `videos/${encodeURIComponent(file.name)}`;
                 const url = `https://api.github.com/repos/MariusHVH/MariusHVH.github.io/contents/${path}`;
 
                 try {
@@ -45,22 +44,23 @@
                         })
                     });
 
+                    const data = await res.json();
                     if (res.ok) {
                         const link = `https://mariusHVH.github.io/${path}`;
                         const domainLink = `https://piqua.top/${path}`;
                         document.getElementById('result').innerHTML = `
-                            ✅ Uploaded successfully!<br><br>
-                            <strong>Discord Link:</strong><br>
+                            ✅ Uploaded!<br><br>
+                            <strong>Discord Embed Link:</strong><br>
                             <a href="${link}" target="_blank">${link}</a><br><br>
                             <strong>Custom Domain:</strong><br>
                             <a href="${domainLink}" target="_blank">${domainLink}</a><br><br>
-                            <em>Post this link in Discord - it will auto-embed as playable video.</em>
+                            Post it in Discord - it auto-embeds and plays.
                         `;
                     } else {
-                        document.getElementById('result').innerHTML = "Upload failed. Check token or repo permissions.";
+                        document.getElementById('result').innerHTML = `Failed: ${data.message || 'Check token/repo'}. Regenerate PAT with repo scope.`;
                     }
                 } catch (e) {
-                    document.getElementById('result').innerHTML = "Error: " + e.message;
+                    document.getElementById('result').innerHTML = "Network error. Try again.";
                 }
             };
             reader.readAsDataURL(file);
